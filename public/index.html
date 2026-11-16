@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="stylesheet" href="/style.css">
-  <script src="/app.js" defer></script>
+  <script src="/app.js" type="module"></script>
 </head>
 <body>
   <main>
@@ -18,10 +18,10 @@
       <button id="install" class="quiet" type="button" hidden>Uygulamayı yükle</button>
     </header>
     <section class="hero" aria-labelledby="title">
-      <h1 id="title">Rehberden<br> kişi seç.</h1>
-      <p>Paylaşmak istediğin kişileri seçerek ad ve numaralarını bu ekranda görüntüle.</p>
-      <button id="pick" class="primary" type="button" disabled>Rehberden seç <span aria-hidden="true">↗</span></button>
-      <p class="note" id="support"></p>
+      <h1 id="title">Rehberi<br> içe aktar.</h1>
+      <p>Telefonunun Kişiler uygulamasından rehberini .vcf olarak dışa aktar. Dosyayı açtığında içindeki tüm kişiler ekrandaki listenin yerini alır.</p>
+      <button id="import" class="primary" type="button">Rehber dosyasını aç <span aria-hidden="true">↗</span></button>
+      <input id="vcf" type="file" accept=".vcf,.vcard,text/vcard,text/x-vcard" hidden>
       <p class="note" id="ios-install" hidden>Safari’de Paylaş menüsünden “Ana Ekrana Ekle” seçeneğini kullanabilirsin.</p>
     </section>
     <section class="panel" aria-labelledby="manual-title">

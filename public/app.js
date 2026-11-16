@@ -1,5 +1,7 @@
-const pick = document.querySelector('#pick');
-const support = document.querySelector('#support');
+import { parseVCard } from './vcard.mjs';
+
+const importButton = document.querySelector('#import');
+const fileInput = document.querySelector('#vcf');
 const status = document.querySelector('#status');
 const people = document.querySelector('#people');
 const clear = document.querySelector('#clear');
@@ -16,7 +18,7 @@ function updateResults() {
   clear.hidden = total === 0;
 }
 
-function addContact(name, numbers) {
+function addContact(name, numbers, target = people) {
   const row = document.createElement('li');
   const contact = document.createElement('div');
   contact.className = 'contact';
@@ -41,44 +43,41 @@ function addContact(name, numbers) {
     status.textContent = 'Kişi kaldırıldı.';
   });
   row.append(contact, remove);
-  people.append(row);
+  target.append(row);
 }
 
-async function configurePicker() {
-  let fields;
+let pageGeneration = 0;
+importButton.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+  const generation = pageGeneration;
+  importButton.disabled = true;
+  status.textContent = 'Rehber okunuyor…';
   try {
-    if (window.isSecureContext && typeof navigator.contacts?.select === 'function') {
-      const supported = await navigator.contacts.getProperties();
-      if (supported.includes('tel')) fields = ['name', 'tel'].filter(field => supported.includes(field));
+    const contents = await file.text();
+    if (generation !== pageGeneration) return;
+    const contacts = parseVCard(contents);
+    if (contacts.length === 0) {
+      status.textContent = 'Dosyada okunabilir kişi bulunamadı.';
+      return;
     }
+    const imported = document.createDocumentFragment();
+    for (const { name, numbers } of contacts) {
+      addContact(name, numbers, imported);
+    }
+    people.replaceChildren(imported);
+    updateResults();
+    status.textContent = contacts.length + ' kişi içe aktarıldı.';
   } catch {
-    // Manual entry is available when the browser cannot provide a picker.
-  }
-  if (!fields) {
-    support.textContent = 'Bu tarayıcıda rehber seçici kullanılamıyor. Aşağıdan elle ekleyebilirsin.';
-    return;
-  }
-  pick.disabled = false;
-  support.textContent = 'Bir veya birden fazla kişiyi seçebilirsin.';
-  pick.addEventListener('click', async () => {
-    status.textContent = '';
-    pick.disabled = true;
-    try {
-      const contacts = await navigator.contacts.select(fields, { multiple: true });
-      for (const contact of contacts) {
-        addContact(contact.name?.[0], (contact.tel ?? []).filter(Boolean));
-      }
-      updateResults();
-      status.textContent = contacts.length ? contacts.length + ' kişi eklendi.' : 'Kişi seçilmedi.';
-    } catch (error) {
-      status.textContent = error.name === 'AbortError'
-        ? 'Kişi seçimi iptal edildi.'
-        : 'Rehber açılmadı. Aşağıdan elle ekleyebilirsin.';
-    } finally {
-      pick.disabled = false;
+    if (generation === pageGeneration) {
+      status.textContent = 'Rehber dosyası okunamadı. .vcf dosyasını tekrar açmayı dene.';
     }
-  });
-}
+  } finally {
+    fileInput.value = '';
+    importButton.disabled = false;
+  }
+});
 
 phoneInput.addEventListener('input', () => phoneInput.setCustomValidity(''));
 manual.addEventListener('submit', event => {
@@ -103,7 +102,9 @@ clear.addEventListener('click', () => {
   status.textContent = 'Kişi listesi temizlendi.';
 });
 window.addEventListener('pagehide', () => {
+  pageGeneration++;
   people.replaceChildren();
+  fileInput.value = '';
   manual.reset();
   phoneInput.setCustomValidity('');
   updateResults();
@@ -133,7 +134,6 @@ const ios = /iPhone|iPad|iPod/.test(navigator.userAgent)
 document.querySelector('#ios-install').hidden = !ios || navigator.standalone
   || window.matchMedia('(display-mode: standalone)').matches;
 
-void configurePicker();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }

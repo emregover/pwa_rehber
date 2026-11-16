@@ -1,8 +1,12 @@
-const cacheName = 'rehber-demo-v1';
-const assets = ['/', '/style.css', '/app.js', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
+const cacheName = 'rehber-demo-v2';
+const assets = ['/', '/style.css', '/app.js', '/vcard.mjs', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(cacheName).then(cache => cache.addAll(assets)));
+  event.waitUntil((async () => {
+    const cache = await caches.open(cacheName);
+    await cache.addAll(assets);
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', event => {
@@ -23,6 +27,6 @@ self.addEventListener('fetch', event => {
     return;
   }
   if (assets.includes(url.pathname)) {
-    event.respondWith(caches.match(event.request).then(response => response || fetch(event.request)));
+    event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
   }
 });
