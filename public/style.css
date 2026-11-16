@@ -34,3 +34,6 @@ li { border-top: 1px solid #e2e6dc; margin-top: 10px; padding-top: 9px; display:
 #status:not(:empty) { margin: 12px 4px; }
 footer { padding: 5px 4px; }
 @media (max-width: 490px) { form { grid-template-columns: 1fr; } .secondary { justify-self: start; } .panel { padding-inline: 15px; } }
+.archive-access { max-width: 360px; margin: 16px 0 12px; }
+.archive-button { margin: 4px 0; color: #f9f9ed; background: transparent; border: 1px solid #c5dcaa; }
+#archive-content { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 55vh; overflow: auto; padding: 12px; background: #edf2e6; border-radius: 9px; }

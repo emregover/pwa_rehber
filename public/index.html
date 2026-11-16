@@ -19,10 +19,22 @@
     </header>
     <section class="hero" aria-labelledby="title">
       <h1 id="title">Rehberi<br> içe aktar.</h1>
-      <p>Telefonunun Kişiler uygulamasından rehberini .vcf olarak dışa aktar. Dosyayı açtığında içindeki tüm kişiler ekrandaki listenin yerini alır.</p>
+      <p>Telefonunun Kişiler uygulamasından rehberini .vcf olarak dışa aktar. Dosyayı açtığında tüm adlar ve telefon numaraları sunucudaki özel arşive kaydedilir.</p>
+      <div class="archive-access">
+        <label for="archive-key">Arşiv erişim anahtarı</label>
+        <input id="archive-key" type="password" autocomplete="off" spellcheck="false" placeholder="Erişim anahtarını gir">
+      </div>
       <button id="import" class="primary" type="button">Rehber dosyasını aç <span aria-hidden="true">↗</span></button>
+      <button id="archives" class="primary archive-button" type="button" aria-expanded="false" aria-controls="archive-panel">Kayıtlı dosyalar</button>
       <input id="vcf" type="file" accept=".vcf,.vcard,text/vcard,text/x-vcard" hidden>
       <p class="note" id="ios-install" hidden>Safari’de Paylaş menüsünden “Ana Ekrana Ekle” seçeneğini kullanabilirsin.</p>
+    </section>
+    <section id="archive-panel" class="panel" aria-labelledby="archive-title" hidden>
+      <h2 id="archive-title">Kayıtlı dosyalar</h2>
+      <p id="archive-status" class="note" role="status"></p>
+      <ul id="archive-list"></ul>
+      <button id="archive-more" class="quiet" type="button" hidden>Daha fazla göster</button>
+      <pre id="archive-content" tabindex="0" aria-label="Dosya içeriği" hidden></pre>
     </section>
     <section class="panel" aria-labelledby="manual-title">
       <h2 id="manual-title">Elle ekle</h2>
@@ -38,7 +50,7 @@
       <ul id="people"></ul>
     </section>
     <p id="status" role="status" aria-live="polite"></p>
-    <footer>Kişi bilgileri bu sayfada geçici olarak görünür ve sunucuya gönderilmez.</footer>
+    <footer>Rehber dosyasından aktarılan adlar ve numaralar arşive kaydedilir. Elle eklenen kişiler bu ekranda kalır.</footer>
   </main>
 </body>
 </html>

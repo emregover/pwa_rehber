@@ -1,4 +1,5 @@
 import { parseVCard } from './vcard.mjs';
+import { archiveKey, requireArchiveKey, saveContacts, resetArchive } from './archive.mjs';
 
 const importButton = document.querySelector('#import');
 const fileInput = document.querySelector('#vcf');
@@ -47,11 +48,19 @@ function addContact(name, numbers, target = people) {
 }
 
 let pageGeneration = 0;
-importButton.addEventListener('click', () => fileInput.click());
+importButton.addEventListener('click', () => {
+  if (requireArchiveKey()) fileInput.click();
+});
 fileInput.addEventListener('change', async () => {
   const file = fileInput.files[0];
   if (!file) return;
   const generation = pageGeneration;
+  const key = archiveKey.value.trim();
+  if (!key) {
+    fileInput.value = '';
+    requireArchiveKey();
+    return;
+  }
   importButton.disabled = true;
   status.textContent = 'Rehber okunuyor…';
   try {
@@ -68,7 +77,13 @@ fileInput.addEventListener('change', async () => {
     }
     people.replaceChildren(imported);
     updateResults();
-    status.textContent = contacts.length + ' kişi içe aktarıldı.';
+    status.textContent = 'Rehber sunucuya kaydediliyor…';
+    try {
+      await saveContacts(contacts, key);
+      if (generation === pageGeneration) status.textContent = contacts.length + ' kişi sunucuya kaydedildi.';
+    } catch (error) {
+      if (generation === pageGeneration) status.textContent = 'Arşive kaydedilemedi. ' + error.message;
+    }
   } catch {
     if (generation === pageGeneration) {
       status.textContent = 'Rehber dosyası okunamadı. .vcf dosyasını tekrar açmayı dene.';
@@ -103,6 +118,8 @@ clear.addEventListener('click', () => {
 });
 window.addEventListener('pagehide', () => {
   pageGeneration++;
+  archiveKey.value = '';
+  resetArchive();
   people.replaceChildren();
   fileInput.value = '';
   manual.reset();
