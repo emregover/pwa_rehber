@@ -32,7 +32,9 @@ export default {
     if (!authorized(request, secret)) {
       return json({ error: 'Arşiv erişim anahtarı eksik veya yanlış.' }, 401);
     }
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    const storeId = process.env.REHBER2026QZAWXSECDRVF99_STORE_ID?.trim()
+      || process.env.BLOB_STORE_ID?.trim();
+    if (!storeId && !process.env.BLOB_READ_WRITE_TOKEN) {
       return json({ error: 'Özel dosya depolaması henüz bağlanmamış.' }, 503);
     }
     const params = new URL(request.url).searchParams;
@@ -49,6 +51,7 @@ export default {
         const sortableTime = String(9_999_999_999_999 - Date.now()).padStart(13, '0');
         const pathname = prefix + sortableTime + '-' + randomUUID() + '.txt';
         const blob = await put(pathname, content, {
+          storeId,
           access: 'private',
           contentType: 'text/plain; charset=utf-8',
         });
@@ -59,13 +62,14 @@ export default {
         const id = params.get('file');
         if (id !== null) {
           if (!filePattern.test(id)) return json({ error: 'Geçersiz dosya kimliği.' }, 400);
-          const result = await get(prefix + id, { access: 'private', useCache: false });
+          const result = await get(prefix + id, { storeId, access: 'private', useCache: false });
           if (result?.statusCode !== 200) return json({ error: 'Dosya bulunamadı.' }, 404);
           return new Response(result.stream, {
             headers: { ...headers, 'Content-Type': 'text/plain; charset=utf-8' },
           });
         }
         const { blobs, hasMore, cursor } = await list({
+          storeId,
           prefix,
           limit: 50,
           cursor: params.get('cursor') || undefined,
