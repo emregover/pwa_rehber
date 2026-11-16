@@ -10,3 +10,10 @@ Telefonun Kişiler uygulamasından dışa aktarılan `.vcf` dosyasını aç. Uyg
 4. Bir gizli pencereyle HTTPS adresinin ve `/api/rehber` yolunun Vercel girişine yönlendirdiğini doğrula. Yetkili Vercel hesabıyla giriş yaptıktan sonra uygulamayı aç.
 
 Her dosya açılışı arşivde ayrı bir kayıt oluşturur. Ekrandaki **Tümünü temizle** düğmesi yalnızca geçerli önizlemeyi temizler. VCF dosyasının kendisi, e-posta adresleri ve fotoğraflar gönderilmez. Gönderilen metin sınırı 4 MB.
+
+## Google Kişiler ile aktarım
+
+1. Google Cloud projesinde **People API**'yi etkinleştir. Google Auth Platform'da uygulama ve izin ekranını yapılandır. **Data Access** bölümünde `https://www.googleapis.com/auth/contacts.readonly` kapsamını ekle. Uygulama test modundaysa aktarım yapacak Google hesabını test kullanıcısı olarak ekle.
+2. **Clients → Create client → Web application** üzerinden istemci oluştur. Yetkili yönlendirme adresine `https://rehber-pwa-demo.vercel.app/api/google-contacts` ekle. Farklı bir alan adı kullanıyorsan tam callback adresini ayrıca Vercel'de `GOOGLE_CONTACTS_REDIRECT_URI` olarak tanımla ve uygulamayı o adresten aç.
+3. Vercel'in Production ortamına `GOOGLE_CONTACTS_CLIENT_ID` ve `GOOGLE_CONTACTS_CLIENT_SECRET` ekle. Secret değerini yalnızca Vercel'de sakla. Yeniden deploy et.
+4. Kullanıcı **Google Kişiler’den aktar** düğmesine dokunur ve Google'da izin verir. Hesapta kayıtlı kişiler topluca özel arşive yazılır. Geçici Google erişim belirteci kalıcı olarak saklanmaz.

@@ -1,3 +1,5 @@
+import { contactTable } from './contact-table.mjs';
+
 const panel = document.querySelector('#archive-panel');
 const button = document.querySelector('#archives');
 const list = document.querySelector('#archive-list');
@@ -29,13 +31,10 @@ async function requestArchive(params, options = {}) {
 }
 
 export async function saveContacts(contacts) {
-  const cell = value => value.replace(/[\t\r\n]+/g, ' ');
-  const rows = contacts.map(({ name, numbers }) =>
-    cell(name || 'İsimsiz kişi') + '\t' + numbers.map(cell).join(', '));
   await requestArchive({}, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Rehber-Import': '1' },
-    body: 'Ad\tTelefon numaraları\n' + rows.join('\n') + '\n',
+    body: contactTable(contacts),
   });
   if (!panel.hidden) void loadFiles();
 }

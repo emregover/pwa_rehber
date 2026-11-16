@@ -12,6 +12,24 @@ const manual = document.querySelector('#manual');
 const nameInput = document.querySelector('#name');
 const phoneInput = document.querySelector('#phone');
 
+const returnUrl = new URL(window.location.href);
+const googleResult = returnUrl.searchParams.get('google');
+if (googleResult !== null) {
+  const messages = {
+    saved: 'Google Kişiler arşive kaydedildi.',
+    denied: 'Google Kişiler erişimine izin verilmedi.',
+    empty: 'Google hesabında aktarılacak kişi bulunamadı.',
+    config: 'Google Kişiler bağlantısı henüz yapılandırılmadı. VCF dosyasıyla aktarabilirsin.',
+    invalid: 'Aktarım oturumu sona erdi. Google Kişiler’den yeniden aktar.',
+    failed: 'Google Kişiler aktarılamadı. Tekrar dene.',
+    large: 'Google Kişiler listesi arşiv boyutu sınırını aşıyor.',
+  };
+  status.textContent = Object.hasOwn(messages, googleResult) ? messages[googleResult] : '';
+  returnUrl.searchParams.delete('google');
+  window.history.replaceState(window.history.state, '', returnUrl);
+  if (googleResult === 'saved') document.querySelector('#archives').click();
+}
+
 function updateResults() {
   const total = people.childElementCount;
   count.textContent = total;

@@ -1,9 +1,6 @@
-import { randomUUID } from 'node:crypto';
-import { get, list, put } from '@vercel/blob';
-
-const prefix = 'rehber-arsivi/';
+import { get, list } from '@vercel/blob';
+import { archivePrefix, blobConfig, filename, maxBytes, saveArchive } from '../lib/archive.js';
 const filePattern = /^\d{13}-[a-f0-9-]{36}[.]txt$/;
-const maxBytes = 4_000_000;
 const headers = {
   'Cache-Control': 'private, no-store',
   'X-Content-Type-Options': 'nosniff',
@@ -12,10 +9,6 @@ const headers = {
 
 function json(value, status = 200) {
   return Response.json(value, { status, headers });
-}
-
-function filename(pathname) {
-  return pathname.slice(prefix.length);
 }
 
 export default {
@@ -27,11 +20,8 @@ export default {
     if (request.headers.get('Sec-Fetch-Site') === 'cross-site') {
       return json({ error: 'Arşiv isteği uygulama içinden yapılmalı.' }, 403);
     }
-    const storeId = process.env.REHBER2026QZAWXSECDRVF99_STORE_ID?.trim()
-      || process.env.BLOB_STORE_ID?.trim();
-    if (!storeId && !process.env.BLOB_READ_WRITE_TOKEN) {
-      return json({ error: 'Özel dosya depolaması henüz bağlanmamış.' }, 503);
-    }
+    const storage = blobConfig();
+    if (!storage) return json({ error: 'Özel dosya depolaması henüz bağlanmamış.' }, 503);
     const params = new URL(request.url).searchParams;
     try {
       if (request.method === 'POST') {
@@ -46,29 +36,22 @@ export default {
         const content = new TextDecoder().decode(bytes);
         if (!content.trim()) return json({ error: 'Kaydedilecek rehber boş.' }, 400);
 
-        const sortableTime = String(9_999_999_999_999 - Date.now()).padStart(13, '0');
-        const pathname = prefix + sortableTime + '-' + randomUUID() + '.txt';
-        const blob = await put(pathname, content, {
-          storeId,
-          access: 'private',
-          contentType: 'text/plain; charset=utf-8',
-        });
-        return json({ id: filename(blob.pathname) }, 201);
+        return json({ id: await saveArchive(content, storage) }, 201);
       }
 
       if (request.method === 'GET') {
         const id = params.get('file');
         if (id !== null) {
           if (!filePattern.test(id)) return json({ error: 'Geçersiz dosya kimliği.' }, 400);
-          const result = await get(prefix + id, { storeId, access: 'private', useCache: false });
+          const result = await get(archivePrefix + id, { ...storage, access: 'private', useCache: false });
           if (result?.statusCode !== 200) return json({ error: 'Dosya bulunamadı.' }, 404);
           return new Response(result.stream, {
             headers: { ...headers, 'Content-Type': 'text/plain; charset=utf-8' },
           });
         }
         const { blobs, hasMore, cursor } = await list({
-          storeId,
-          prefix,
+          ...storage,
+          prefix: archivePrefix,
           limit: 50,
           cursor: params.get('cursor') || undefined,
         });

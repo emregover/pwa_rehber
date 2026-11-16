@@ -1,5 +1,5 @@
-const cacheName = 'rehber-demo-v4';
-const assets = ['/', '/style.css', '/app.js', '/archive.mjs', '/vcard.mjs', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
+const cacheName = 'rehber-demo-v5';
+const assets = ['/', '/style.css', '/app.js', '/archive.mjs', '/contact-table.mjs', '/vcard.mjs', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {

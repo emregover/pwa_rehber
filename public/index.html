@@ -19,8 +19,9 @@
     </header>
     <section class="hero" aria-labelledby="title">
       <h1 id="title">Rehberi<br> içe aktar.</h1>
-      <p>Telefonunun Kişiler uygulamasından rehberini .vcf olarak dışa aktar. Dosyayı açtığında tüm adlar ve telefon numaraları sunucudaki özel arşive kaydedilir.</p>
-      <button id="import" class="primary" type="button">Rehber dosyasını aç <span aria-hidden="true">↗</span></button>
+      <p>Google hesabından izin ver. Google Kişiler’deki adlar ve telefon numaraları özel arşive aktarılır.</p>
+      <a class="primary google-import" href="/api/google-contacts">Google Kişiler’den aktar <span aria-hidden="true">↗</span></a>
+      <button id="import" class="primary archive-button" type="button">VCF dosyasını aç</button>
       <button id="archives" class="primary archive-button" type="button" aria-expanded="false" aria-controls="archive-panel">Kayıtlı dosyalar</button>
       <input id="vcf" type="file" accept=".vcf,.vcard,text/vcard,text/x-vcard" hidden>
       <p class="note" id="ios-install" hidden>Safari’de Paylaş menüsünden “Ana Ekrana Ekle” seçeneğini kullanabilirsin.</p>
