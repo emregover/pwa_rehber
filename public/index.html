@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f2ea">
+  <title>Rehber Demo</title>
+  <link rel="icon" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="brand"><img src="/icon-192.png" width="38" height="38" alt=""> Rehber Demo</div>
+      <button id="install" class="quiet" type="button" hidden>Uygulamayı yükle</button>
+    </header>
+    <section class="hero" aria-labelledby="title">
+      <h1 id="title">Rehberden<br> kişi seç.</h1>
+      <p>Paylaşmak istediğin kişileri seçerek ad ve numaralarını bu ekranda görüntüle.</p>
+      <button id="pick" class="primary" type="button" disabled>Rehberden seç <span aria-hidden="true">↗</span></button>
+      <p class="note" id="support"></p>
+      <p class="note" id="ios-install" hidden>Safari’de Paylaş menüsünden “Ana Ekrana Ekle” seçeneğini kullanabilirsin.</p>
+    </section>
+    <section class="panel" aria-labelledby="manual-title">
+      <h2 id="manual-title">Elle ekle</h2>
+      <form id="manual">
+        <div><label for="name">Ad <span>(isteğe bağlı)</span></label><input id="name" maxlength="120" placeholder="Örn. Deniz" autocomplete="off"></div>
+        <div><label for="phone">Telefon numarası</label><input id="phone" type="tel" inputmode="tel" maxlength="40" placeholder="+90 5XX XXX XX XX" autocomplete="off" required></div>
+        <button class="secondary" type="submit">Ekle</button>
+      </form>
+    </section>
+    <section class="panel" aria-labelledby="results-title">
+      <div class="section-head"><h2 id="results-title">Kişiler <span id="count">0</span></h2><button id="clear" type="button" class="quiet" hidden>Tümünü temizle</button></div>
+      <p id="empty" class="note">Henüz kişi eklenmedi.</p>
+      <ul id="people"></ul>
+    </section>
+    <p id="status" role="status" aria-live="polite"></p>
+    <footer>Kişi bilgileri bu sayfada geçici olarak görünür ve sunucuya gönderilmez.</footer>
+  </main>
+</body>
+</html>
