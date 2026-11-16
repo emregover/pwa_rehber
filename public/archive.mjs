@@ -1,4 +1,3 @@
-export const archiveKey = document.querySelector('#archive-key');
 const panel = document.querySelector('#archive-panel');
 const button = document.querySelector('#archives');
 const list = document.querySelector('#archive-list');
@@ -10,21 +9,18 @@ let cursor;
 let listRequest;
 let fileRequest;
 
-export function requireArchiveKey() {
-  archiveKey.setCustomValidity(archiveKey.value.trim() ? '' : 'Arşiv erişim anahtarını gir.');
-  if (archiveKey.reportValidity()) return true;
-  archiveKey.focus();
-  return false;
-}
-
-async function requestArchive(params, key, options = {}) {
+async function requestArchive(params, options = {}) {
   const url = new URL('/api/rehber', location.origin);
   url.search = new URLSearchParams(params);
   const response = await fetch(url, {
     ...options,
     cache: 'no-store',
-    headers: { Authorization: 'Bearer ' + key, ...options.headers },
+    credentials: 'same-origin',
+    redirect: 'manual',
   });
+  if (response.type === 'opaqueredirect' || [401, 403].includes(response.status)) {
+    throw new Error('Vercel oturumunu yenilemek için uygulama sayfasını yeniden aç.');
+  }
   if (!response.ok) {
     const error = await response.json().catch(() => null);
     throw new Error(error?.error || 'Sunucu yanıt vermedi. Biraz sonra tekrar dene.');
@@ -32,16 +28,16 @@ async function requestArchive(params, key, options = {}) {
   return response;
 }
 
-export async function saveContacts(contacts, key) {
+export async function saveContacts(contacts) {
   const cell = value => value.replace(/[\t\r\n]+/g, ' ');
   const rows = contacts.map(({ name, numbers }) =>
     cell(name || 'İsimsiz kişi') + '\t' + numbers.map(cell).join(', '));
-  await requestArchive({}, key, {
+  await requestArchive({}, {
     method: 'POST',
-    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Rehber-Import': '1' },
     body: 'Ad\tTelefon numaraları\n' + rows.join('\n') + '\n',
   });
-  if (!panel.hidden && archiveKey.value.trim() === key) void loadFiles();
+  if (!panel.hidden) void loadFiles();
 }
 
 export function resetArchive() {
@@ -64,7 +60,7 @@ async function openFile(file) {
   content.textContent = 'Dosya açılıyor…';
   content.hidden = false;
   try {
-    const response = await requestArchive({ file: file.id }, archiveKey.value.trim(), { signal: request.signal });
+    const response = await requestArchive({ file: file.id }, { signal: request.signal });
     const text = await response.text();
     if (!request.signal.aborted) {
       content.textContent = text;
@@ -89,7 +85,7 @@ async function loadFiles(append = false) {
   status.textContent = 'Dosyalar yükleniyor…';
   more.hidden = true;
   try {
-    const response = await requestArchive(cursor ? { cursor } : {}, archiveKey.value.trim(), { signal: request.signal });
+    const response = await requestArchive(cursor ? { cursor } : {}, { signal: request.signal });
     const result = await response.json();
     if (request.signal.aborted) return;
     for (const file of result.files) {
@@ -111,16 +107,11 @@ async function loadFiles(append = false) {
   }
 }
 
-archiveKey.addEventListener('input', () => {
-  archiveKey.setCustomValidity('');
-  resetArchive();
-});
 button.addEventListener('click', () => {
   if (!panel.hidden) {
     resetArchive();
     return;
   }
-  if (!requireArchiveKey()) return;
   panel.hidden = false;
   button.setAttribute('aria-expanded', 'true');
   void loadFiles();

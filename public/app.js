@@ -1,5 +1,5 @@
 import { parseVCard } from './vcard.mjs';
-import { archiveKey, requireArchiveKey, saveContacts, resetArchive } from './archive.mjs';
+import { saveContacts, resetArchive } from './archive.mjs';
 
 const importButton = document.querySelector('#import');
 const fileInput = document.querySelector('#vcf');
@@ -48,19 +48,11 @@ function addContact(name, numbers, target = people) {
 }
 
 let pageGeneration = 0;
-importButton.addEventListener('click', () => {
-  if (requireArchiveKey()) fileInput.click();
-});
+importButton.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', async () => {
   const file = fileInput.files[0];
   if (!file) return;
   const generation = pageGeneration;
-  const key = archiveKey.value.trim();
-  if (!key) {
-    fileInput.value = '';
-    requireArchiveKey();
-    return;
-  }
   importButton.disabled = true;
   status.textContent = 'Rehber okunuyor…';
   try {
@@ -79,7 +71,7 @@ fileInput.addEventListener('change', async () => {
     updateResults();
     status.textContent = 'Rehber sunucuya kaydediliyor…';
     try {
-      await saveContacts(contacts, key);
+      await saveContacts(contacts);
       if (generation === pageGeneration) status.textContent = contacts.length + ' kişi sunucuya kaydedildi.';
     } catch (error) {
       if (generation === pageGeneration) status.textContent = 'Arşive kaydedilemedi. ' + error.message;
@@ -118,7 +110,6 @@ clear.addEventListener('click', () => {
 });
 window.addEventListener('pagehide', () => {
   pageGeneration++;
-  archiveKey.value = '';
   resetArchive();
   people.replaceChildren();
   fileInput.value = '';

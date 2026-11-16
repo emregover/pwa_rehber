@@ -1,4 +1,4 @@
-import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { get, list, put } from '@vercel/blob';
 
 const prefix = 'rehber-arsivi/';
@@ -14,23 +14,18 @@ function json(value, status = 200) {
   return Response.json(value, { status, headers });
 }
 
-function authorized(request, secret) {
-  const digest = value => createHash('sha256').update(value).digest();
-  return timingSafeEqual(digest(request.headers.get('Authorization') || ''), digest('Bearer ' + secret));
-}
-
 function filename(pathname) {
   return pathname.slice(prefix.length);
 }
 
 export default {
   async fetch(request) {
-    const secret = process.env.REHBER_ERISIM_ANAHTARI;
-    if (!secret || secret.length < 24) {
-      return json({ error: 'Sunucu erişim anahtarı henüz yapılandırılmamış.' }, 503);
+    // Vercel Authentication (All Deployments) authorizes visitors before this function runs.
+    if (process.env.VERCEL !== '1') {
+      return json({ error: 'Rehber arşivi korumalı Vercel yayınında kullanılabilir.' }, 503);
     }
-    if (!authorized(request, secret)) {
-      return json({ error: 'Arşiv erişim anahtarı eksik veya yanlış.' }, 401);
+    if (request.headers.get('Sec-Fetch-Site') === 'cross-site') {
+      return json({ error: 'Arşiv isteği uygulama içinden yapılmalı.' }, 403);
     }
     const storeId = process.env.REHBER2026QZAWXSECDRVF99_STORE_ID?.trim()
       || process.env.BLOB_STORE_ID?.trim();
@@ -40,6 +35,9 @@ export default {
     const params = new URL(request.url).searchParams;
     try {
       if (request.method === 'POST') {
+        if (request.headers.get('X-Rehber-Import') !== '1') {
+          return json({ error: 'Aktarım uygulama içinden başlatılmalı.' }, 403);
+        }
         if (request.headers.get('Content-Type')?.split(';')[0].trim() !== 'text/plain') {
           return json({ error: 'Düz metin gönderilmesi gerekiyor.' }, 415);
         }

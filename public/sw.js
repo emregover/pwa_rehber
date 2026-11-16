@@ -1,4 +1,4 @@
-const cacheName = 'rehber-demo-v3';
+const cacheName = 'rehber-demo-v4';
 const assets = ['/', '/style.css', '/app.js', '/archive.mjs', '/vcard.mjs', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', event => {
